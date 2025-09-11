@@ -11,7 +11,14 @@ api_key = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
 
 
-def main():
+def main() -> None:
+    if len(sys.argv) < 2:
+        print(
+            'Error:a message is required for the agent to work (e.g. uv run "your message")',
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     content_message = sys.argv[1]
 
     response = client.models.generate_content(
