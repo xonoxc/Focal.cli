@@ -29,8 +29,12 @@ def main() -> None:
         model="gemini-2.0-flash-001", contents=messages
     )
     print("response:", response.text)
-    print("tokens_used:", response.usage_metadata.prompt_token_count)
-    print("candidate_token_count:", response.usage_metadata.candidates_token_count)
+
+    if "--verbose" in sys.argv:
+        print("----- info ---------")
+        print("user_prompt:", content_message)
+        print("tokens_used:", response.usage_metadata.prompt_token_count)
+        print("candidate_token_count:", response.usage_metadata.candidates_token_count)
 
 
 if __name__ == "__main__":
