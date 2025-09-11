@@ -1,4 +1,5 @@
 import os
+import sys
 from dotenv import load_dotenv
 from google import genai
 
@@ -11,8 +12,10 @@ client = genai.Client(api_key=api_key)
 
 
 def main():
+    content_message = sys.argv[1]
+
     response = client.models.generate_content(
-        model="gemini-2.0-flash-001", contents="Why is the sky blue?"
+        model="gemini-2.0-flash-001", contents=content_message
     )
     print("response:", response.text)
     print("tokens_used:", response.usage_metadata.prompt_token_count)
