@@ -2,13 +2,16 @@ import os
 import sys
 from dotenv import load_dotenv
 from google import genai
-
+from google.genai import types
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
 
 
 client = genai.Client(api_key=api_key)
+
+
+# user messages [the context]
 
 
 def main() -> None:
@@ -20,9 +23,10 @@ def main() -> None:
         sys.exit(1)
 
     content_message = sys.argv[1]
+    messages = [types.Content(role="user", parts=[types.Part(text=content_message)])]
 
     response = client.models.generate_content(
-        model="gemini-2.0-flash-001", contents=content_message
+        model="gemini-2.0-flash-001", contents=messages
     )
     print("response:", response.text)
     print("tokens_used:", response.usage_metadata.prompt_token_count)
