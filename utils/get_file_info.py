@@ -60,15 +60,19 @@ def is_subpath(working_directory: str, file_path: str) -> bool:
 
 
 def get_file_content(working_directory: str, file_path: str) -> str:
-    if not is_subpath(working_directory, file_path):
+    complete_path = os.path.join(working_directory, file_path)
+
+    if not is_subpath(working_directory, complete_path):
         return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
 
-    if not os.path.isfile(file_path):
+    if not os.path.isfile(complete_path):
         return f'Error: File not found or is not a regular file: "{file_path}"'
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
-            content = f.read(MAX_FILE_CONTENT_LENGTH)
+        with open(complete_path, "r", encoding="utf-8") as f:
+            content = f.read(
+                MAX_FILE_CONTENT_LENGTH + 1
+            )  # reading one extra character to check for truncation
 
             if len(content) > MAX_FILE_CONTENT_LENGTH:
                 content = (

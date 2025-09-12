@@ -1,5 +1,6 @@
 from pathlib import Path
-from utils.get_file_info import get_file_info
+from utils.get_file_info import get_file_info, get_file_content
+from config.opts import MAX_FILE_CONTENT_LENGTH
 
 
 def test_get_file_info_current_dir(tmp_path: Path) -> None:
@@ -59,4 +60,13 @@ def test_get_file_info_outside_relative(tmp_path: Path) -> None:
     assert (
         f'Error: Cannot list "{parent_dir}" as it is outside the permitted working directory'
         in result
+    )
+
+
+def test_get_file_content_truncating_properly() -> None:
+    content = get_file_content("calculator", "lorem.txt")
+
+    assert (
+        f'\n[...File "lorem.txt" truncated at {MAX_FILE_CONTENT_LENGTH} characters]'
+        in content
     )
