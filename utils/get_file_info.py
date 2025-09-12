@@ -88,3 +88,22 @@ def get_file_content(working_directory: str, file_path: str) -> str:
         return f'Error: An unexpected I/O error occurred reading "{file_path}": {e}'
     except UnicodeDecodeError:
         return f'Error: Failed to decode "{file_path}" as UTF-8 text'
+
+
+def write_file(working_directory: str, file_path: str, content: str) -> str:
+    complete_path = os.path.join(working_directory, file_path)
+
+    if not is_subpath(working_directory, complete_path):
+        return f'Error: Cannot read "{file_path}" as it is outside the permitted working directory'
+
+    try:
+        with open(complete_path, "w") as f:
+            f.write(content)
+    except PermissionError:
+        return f'Error: Cannot write "{file_path}" no permissions to write to the file'
+    except IsADirectoryError:
+        return f"Error: Cannot write the file path {file_path} is a directory"
+    except OSError as e:
+        return f"Some other I/O error occurred: {e}"
+
+    return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'

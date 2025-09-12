@@ -1,5 +1,5 @@
 from pathlib import Path
-from utils.get_file_info import get_file_info, get_file_content
+from utils.get_file_info import get_file_info, get_file_content, write_file
 from config.opts import MAX_FILE_CONTENT_LENGTH
 
 
@@ -83,3 +83,23 @@ def test_get_file_content_truncating_properly() -> None:
 
     content_missing = get_file_content("calculator", "pkg/does_not_exist.py")
     assert content_missing.startswith("Error:")
+
+
+def test_write_file_functionality() -> None:
+    content1 = "wait, this isn't lorem ipsum"
+    result = write_file("calculator", "lorem.txt", content1)
+    assert (
+        result
+        == f'Successfully wrote to "lorem.txt" ({len(content1)} characters written)'
+    )
+
+    content2 = "lorem ipsum dolor sit amet"
+    result = write_file("calculator", "pkg/morelorem.txt", content2)
+    assert (
+        result
+        == f'Successfully wrote to "pkg/morelorem.txt" ({len(content2)} characters written)'
+    )
+
+    content3 = "this should not be allowed"
+    result = write_file("calculator", "/tmp/temp.txt", content3)
+    assert result.startswith("Error:")
