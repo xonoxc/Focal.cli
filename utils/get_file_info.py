@@ -39,6 +39,12 @@ def describe_directory(path: str) -> str:
 
 
 def is_subdir(working_dir: str, target_dir: str) -> bool:
-    work = Path(working_dir).resolve(strict=True)
-    target = Path(target_dir).resolve(strict=True)
+    try:
+        work = Path(working_dir).resolve(strict=True)
+        target = Path(target_dir).resolve(strict=True)
+    except FileNotFoundError:
+        raise
+    except PermissionError:
+        raise
+
     return work in target.parents or work == target
