@@ -1,4 +1,6 @@
+from ast import arg
 import os
+import subprocess
 
 from pathlib import Path
 from config.opts import MAX_FILE_CONTENT_LENGTH
@@ -107,3 +109,43 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
         return f"Some other I/O error occurred: {e}"
 
     return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
+
+
+def run_python_file(working_directory: str, file_path: str, args=[]):
+    complete_path = os.path.join(working_directory, file_path)
+
+    if not is_subpath(working_directory, complete_path):
+        return f'Error: Cannot execute "{file_path}" as it is outside the permitted working directory'
+
+    if not os.path.exists(complete_path):
+        return f'Error: File "{file_path}" not found.'
+
+    if not file_path.endswith(".py"):
+        return f'Error: "{file_path}" is not a Python file.'
+
+    try:
+        response = subprocess.run(
+            ["python3", complete_path, *args],
+            capture_output=True,
+            text=True,
+            cwd=working_directory,
+            timeout=30,
+        )
+
+        output = ""
+        if response.stdout:
+            output += f"STDOUT:\n{response.stdout}"
+
+        if response.stderr:
+            output += f"\nSTDERR:\n{response.stderr}"
+
+        if response.returncode != 0:
+            output += f"\nProcess exited with code {response.returncode}"
+
+        if not output.strip():
+            output = "No output produced."
+
+        return output
+
+    except Exception as e:
+        return f"Error: executing Python file: {e}"
