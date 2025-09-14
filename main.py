@@ -1,10 +1,16 @@
 import os
 import sys
+import json
+from typing import List
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from utils.tools import available_functions
 from system.prompt import SYSTEM_PROMPT
+from utils.caller import call_function
+
+
+from google.genai.errors import ServerError, APIError
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -13,39 +19,90 @@ api_key = os.environ.get("GEMINI_API_KEY")
 client = genai.Client(api_key=api_key)
 
 
-# user messages [the context]
+def make_function_message(call_res: types.Content) -> types.Content | None:
+    """Extract a function response and wrap it into a user message."""
+    parts = call_res.parts or []
+    if parts and parts[0].function_response and parts[0].function_response.response:
+        return types.Content(
+            role="user",
+            parts=[types.Part(text=json.dumps(parts[0].function_response.response))],
+        )
+    return None
 
 
 def main() -> None:
     if len(sys.argv) < 2:
         print(
-            'Error:a message is required for the agent to work (e.g. uv run "your message")',
+            'Error :a message is required for the agent to work (e.g. uv run "your message")',
             file=sys.stderr,
         )
         sys.exit(1)
 
     content_message = sys.argv[1]
-    messages = [types.Content(role="user", parts=[types.Part(text=content_message)])]
+    messages: List[types.Content] = [
+        types.Content(role="user", parts=[types.Part(text=content_message)])
+    ]
 
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
-        contents=messages,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT, tools=[available_functions]
-        ),
-    )
+    is_verbose_mode = "--verbose" in sys.argv
 
-    if len(response.function_calls) > 0:
-        for call in response.function_calls:
-            print(f"Calling function: {call.name}({call.args})")
-    print("response:", response.text)
+    print("user:", content_message)
 
-    if "--verbose" in sys.argv:
-        print("----- info ---------")
-        print("user_prompt:", content_message)
-        print("tokens_used:", response.usage_metadata.prompt_token_count)
-        print("candidate_token_count:", response.usage_metadata.candidates_token_count)
+    iteration = 0
+    while iteration < 20:
+        iteration += 1
+
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-001",
+                contents=messages,
+                config=types.GenerateContentConfig(
+                    system_instruction=SYSTEM_PROMPT, tools=[available_functions]
+                ),
+            )
+
+        except (ServerError, APIError) as e:
+            print("Server Error:", e, file=sys.stderr)
+            sys.exit(1)
+
+        if not response.candidates and not response.function_calls:
+            print("Agent is done !")
+            break
+
+        if response.candidates:
+            for candidate in response.candidates:
+                if candidate.content:
+                    messages.append(candidate.content)
+
+                    if candidate.content.parts:
+                        for part in candidate.content.parts:
+                            if part.text:
+                                print("model:", part.text)
+
+        if response.function_calls:
+            for call in response.function_calls:
+                print(f"Calling function: {call.name}({call.args})")
+                func_resp = call_function(call, verbose=is_verbose_mode)
+
+                if resp := make_function_message(func_resp):
+                    print("tool call response:", resp.parts[0].text)
+                    messages.append(resp)
+                else:
+                    print(f"Warning: {call.name} returned invalid response")
+            continue
+
+    if is_verbose_mode:
+        meta = response.usage_metadata
+        if meta:
+            print(
+                f"----- info ---------\n"
+                f"user_prompt: {content_message}\n"
+                f"tokens_used: {meta.prompt_token_count}\n"
+                f"candidate_token_count: {meta.candidates_token_count}\n"
+            )
+        else:
+            print("No usage metadata found!")
 
 
 if __name__ == "__main__":
     main()
+

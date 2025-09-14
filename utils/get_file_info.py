@@ -5,12 +5,12 @@ from pathlib import Path
 from config.opts import MAX_FILE_CONTENT_LENGTH
 
 
-def get_file_info(working_direcory: str, directory=".") -> str:
+def get_file_info(working_directory: str, directory=".") -> str:
     if not os.path.isdir(directory):
         return f'Error: "{directory}" is not a directory'
 
     try:
-        if not is_subdir(working_direcory, directory):
+        if not is_subdir(working_directory, directory):
             return f'Error: Cannot list "{directory}" as it is outside the permitted working directory'
     except FileNotFoundError:
         return f"Error: Path does not exist: {directory}"
