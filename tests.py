@@ -1,11 +1,9 @@
 from pathlib import Path
 from utils.get_file_info import (
     get_file_info,
-    get_file_content,
     write_file,
     run_python_file,
 )
-from config.opts import MAX_FILE_CONTENT_LENGTH
 
 
 def test_get_file_info_current_dir(tmp_path: Path) -> None:
