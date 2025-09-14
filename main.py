@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from utils.tools import available_functions
+from system.prompt import SYSTEM_PROMPT
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -13,17 +14,6 @@ client = genai.Client(api_key=api_key)
 
 
 # user messages [the context]
-
-
-system_prompt = """
-You are a helpful AI coding agent.
-
-When a user asks a question or makes a request, make a function call plan. You can perform the following operations:
-
-- List files and directories
-
-All paths you provide should be relative to the working directory. You do not need to specify the working directory in your function calls as it is automatically injected for security reasons.
-"""
 
 
 def main() -> None:
@@ -41,7 +31,7 @@ def main() -> None:
         model="gemini-2.0-flash-001",
         contents=messages,
         config=types.GenerateContentConfig(
-            system_instruction=system_prompt, tools=[available_functions]
+            system_instruction=SYSTEM_PROMPT, tools=[available_functions]
         ),
     )
 

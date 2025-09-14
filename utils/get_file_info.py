@@ -110,7 +110,7 @@ def write_file(working_directory: str, file_path: str, content: str) -> str:
     return f'Successfully wrote to "{file_path}" ({len(content)} characters written)'
 
 
-def run_python_file(working_directory: str, file_path: str, args=[]):
+def run_python_file(working_directory: str, file_path: str, args=[]) -> str:
     complete_path = os.path.join(working_directory, file_path)
 
     if not is_subpath(working_directory, complete_path):
