@@ -82,7 +82,7 @@ python calculator/main.py "3 + 5"
 
 ```
 .
-├── calculator/       # Standalone calculator application
+├── calculator/       # Standalone calculator application for testing the agent
 ├── config/           # Project configuration
 ├── main.py           # Main entry point for the AI agent
 ├── system/           # System prompts for the AI agent
@@ -91,7 +91,7 @@ python calculator/main.py "3 + 5"
 └── utils/            # Utility functions for the AI agent
 ```
 
--   **`calculator/`**: Contains the standalone calculator application.
+-   **`calculator/`**: Contains the standalone calculator application for testing the agent.
 -   **`config/`**: Contains configuration files for the project.
 -   **`main.py`**: The main entry point for the AI coding agent.
 -   **`system/`**: Contains the system prompt that defines the agent's behavior.
