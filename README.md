@@ -21,8 +21,8 @@ Focal is a command-line AI coding agent powered by the Gemini API. It can intera
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/xonoxc/focal.git
-    cd focal
+    git clone https://github.com/xonoxc/Focal.cli.git
+    cd Focal.cli
     ```
 
 2.  **Create and activate a virtual environment:**
