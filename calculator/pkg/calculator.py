@@ -1,4 +1,3 @@
-# WARN: this is the test project the agent was is to be tested nothing related to the agent code
 class Calculator:
     def __init__(self):
         self.operators = {
@@ -8,7 +7,7 @@ class Calculator:
             "/": lambda a, b: a / b,
         }
         self.precedence = {
-            "+": 1,
+            "+": 3,
             "-": 1,
             "*": 2,
             "/": 2,
@@ -23,35 +22,31 @@ class Calculator:
     def _evaluate_infix(self, tokens):
         values = []
         operators = []
-
-        for token in tokens:
-            if token in self.operators:
-                while (
-                    operators
-                    and operators[-1] in self.operators
-                    and self.precedence[operators[-1]] >= self.precedence[token]
-                ):
-                    self._apply_operator(operators, values)
+        i = 0
+        while i < len(tokens):
+            token = tokens[i]
+            if token.isdigit():
+                values.append(int(token))
+            elif token in self.operators:
                 operators.append(token)
-            elif token.isdigit():
-                values.append(float(token))
-            elif token == "(":
+            elif token == "(":  # Add support for parentheses
                 operators.append(token)
             elif token == ")":
-                while operators and operators[-1] != "(":
-                    self._apply_operator(operators, values)
-                operators.pop()  # Remove '('
-            else:
-                raise ValueError(f"Invalid token: {token}")
+                while operators and operators[-1] != "(":  # Evaluate until matching '('
+                    op = operators.pop()
+                    val2 = values.pop()
+                    val1 = values.pop()
+                    result = self.operators[op](val1, val2)
+                    values.append(result)
+                operators.pop()  # Remove the '('
+            i += 1
 
         while operators:
-            self._apply_operator(operators, values)
+            op = operators.pop()
+            val2 = values.pop()
+            val1 = values.pop()
+            result = self.operators[op](val1, val2)
+            values.append(result)
 
         return values[0]
 
-    def _apply_operator(self, operators, values):
-        operator = operators.pop()
-        right = values.pop()
-        left = values.pop()
-        result = self.operators[operator](left, right)
-        values.append(result)

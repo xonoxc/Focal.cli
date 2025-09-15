@@ -8,6 +8,14 @@ from google.genai import types
 from utils.tools import available_functions
 from system.prompt import SYSTEM_PROMPT
 from utils.caller import call_function
+from utils.ui import (
+    print_user_message,
+    print_model_response,
+    print_function_call,
+    print_tool_response,
+    print_error,
+    print_info,
+)
 
 
 from google.genai.errors import ServerError, APIError
@@ -32,9 +40,8 @@ def make_function_message(call_res: types.Content) -> types.Content | None:
 
 def main() -> None:
     if len(sys.argv) < 2:
-        print(
-            'Error :a message is required for the agent to work (e.g. uv run "your message")',
-            file=sys.stderr,
+        print_error(
+            'a message is required for the agent to work (e.g. uv run "your message")'
         )
         sys.exit(1)
 
@@ -45,7 +52,7 @@ def main() -> None:
 
     is_verbose_mode = "--verbose" in sys.argv
 
-    print("user:", content_message)
+    print_user_message(content_message)
 
     iteration = 0
     while iteration < 20:
@@ -61,11 +68,14 @@ def main() -> None:
             )
 
         except (ServerError, APIError) as e:
-            print("Server Error:", e, file=sys.stderr)
+            if "429" in e:
+                print_info("Tip: Try slowing requests or trimming context")
+            else:
+                print_error(f"Server Error: {e}")
             sys.exit(1)
 
         if not response.candidates and not response.function_calls:
-            print("Agent is done !")
+            print_info("Agent is done !")
             break
 
         if response.candidates:
@@ -76,33 +86,31 @@ def main() -> None:
                     if candidate.content.parts:
                         for part in candidate.content.parts:
                             if part.text:
-                                print("model:", part.text)
+                                print_model_response(part.text)
 
         if response.function_calls:
             for call in response.function_calls:
-                print(f"Calling function: {call.name}({call.args})")
+                print_function_call(call.name, call.args)
                 func_resp = call_function(call, verbose=is_verbose_mode)
 
                 if resp := make_function_message(func_resp):
-                    print("tool call response:", resp.parts[0].text)
+                    print_tool_response(resp.parts[0].text)
                     messages.append(resp)
                 else:
-                    print(f"Warning: {call.name} returned invalid response")
+                    print_error(f"Warning: {call.name} returned invalid response")
             continue
 
     if is_verbose_mode:
         meta = response.usage_metadata
         if meta:
-            print(
-                f"----- info ---------\n"
+            print_info(
                 f"user_prompt: {content_message}\n"
                 f"tokens_used: {meta.prompt_token_count}\n"
                 f"candidate_token_count: {meta.candidates_token_count}\n"
             )
         else:
-            print("No usage metadata found!")
+            print_info("No usage metadata found!")
 
 
 if __name__ == "__main__":
     main()
-
