@@ -1,4 +1,4 @@
-# Focal - AI Coding Agent
+# Focal.CLI 
 
 Focal is a command-line AI coding agent powered by the Gemini API. It can interact with your local filesystem to perform tasks such as listing files, reading and writing file content, and executing Python scripts. The agent is designed to be a helpful tool for developers, providing a conversational interface to automate and assist with coding-related tasks.
 
