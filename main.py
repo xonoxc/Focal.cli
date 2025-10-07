@@ -18,7 +18,7 @@ from utils.ui import (
 )
 
 
-from google.genai.errors import ServerError, APIError
+from google.genai.errors import ClientError, ServerError, APIError
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -68,10 +68,10 @@ def main() -> None:
             )
 
         except (ServerError, APIError) as e:
-            if "429" in e:
-                print_info("Tip: Try slowing requests or trimming context")
+            if e.code == 429:
+                print_error(e.message)
             else:
-                print_error(f"Server Error: {e}")
+                print_error(f"Server Error: {e.message}")
             sys.exit(1)
 
         if not response.candidates and not response.function_calls:

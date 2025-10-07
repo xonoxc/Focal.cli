@@ -15,7 +15,7 @@ def get_file_info(working_directory: str, directory=".") -> str:
     except FileNotFoundError:
         return f"Error: Path does not exist: {directory}"
     except PermissionError:
-        return f"Error: Permission denied"
+        return f"Error: {directory} Permission denied"
 
     return describe_directory(directory)
 
