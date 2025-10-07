@@ -18,7 +18,7 @@ from utils.ui import (
 )
 
 
-from google.genai.errors import ClientError, ServerError, APIError
+from google.genai.errors import ServerError, APIError
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
